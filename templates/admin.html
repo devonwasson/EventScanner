@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+</head>
+
+<body>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <p id="unauthorized" style="visibility:hidden">Go home, you shouldn't be here</p>
+
+    <div id="testAdmin" style="visibility: visible; text-align: center;">
+        <form action=javascript:testIfAdmin(AdminId.value);>
+            Please scan or enter your ADMIN ID to log in: 
+            <input id="AdminId" name="AdminId" type="password">
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+
+    <div id="addNewStudent" style="text-align: center; visibility: hidden; padding-bottom: 30px;">
+        <form id="studentIdForm" action=javascript:enterNewAuthStudent(studentId.value);>
+            Add a new Authorized User: 
+            <input id="studentId" type="password" name="studentId" type="password" placeholder="12345678">
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+
+    <div id="addEmailer" style="text-align: center; visibility: hidden; padding-bottom: 30px;">
+        <form id="emailerAddressForm" action=javascript:enterNewEmailer(emailerAddress.value);>
+            Add a new Authorized Email Recepient: 
+            <input id="emailerAddress" type="text" name="EmailerName" type="password" placeholder="abc123">
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+
+    <form id="uploadNewCsv" method="post" enctype="multipart/form-data" style="text-align: center; visibility: hidden; padding-bottom: 30px;">
+        <label for="file">Upload a new CSV file: </label>
+        <input name="file" type="file" accept=".csv">
+        <button id="upload-file-btn" type="button">Upload</button>
+    </form>
+
+    <div id="removeAuthorizedUsers" style="text-align: center; visibility: hidden; padding-bottom: 30px;">
+        <form id="removeAuthorizedUserForm" action=javascript:removeAuthorizedUser(currentAuthorizedUsers.value);>
+            Remove an Authorized User <select id="currentAuthorizedUsers" name="currentAuthorizedUsers"></select>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+
+    <p id="outMessage" style="text-align: center; visibility: hidden;">
+    </p>
+
+
+    <p id="adminUserId" style="visibility:hidden">""</p>
+    <script src="../static/js/scanner.js" ></script>
+</body>
+</html>
+

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+</head>
+
+<body>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <p id="unauthorized" style="visibility:hidden">Go home, you shouldn't be here</p>
+
+    <div id="testAuth" style="visibility: visible; text-align: center; display: block;">
+        <form action=javascript:testIfAuthorized(AuthId.value);>
+            Please scan your own ID to log in: <input id="AuthId" name="AuthId" type="password">
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+
+    <div id="selectEvent" style="visibility: hidden; text-align: center; display: none;">
+        <form action=javascript:makeNewOutFile(eventName.value);>
+            Please enter an event name: <input id="eventName" type="text" name="eventName">
+            <input type="submit" value="Submit">
+        </form>
+        <p id="documentExists" style="visibility: hidden; text-align: center;">
+            This event already exists. Either enter a new event name<br>
+            or select the event from the drop down menu below.
+        </p>
+        <form action=javascript:openOldOutFile(events.value); style="padding-top: 10px; padding-bottom: 10px;">
+            or choose a previous event <select id="events" name="events"></select>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+
+    <div id="scanIds" style="visibility: hidden; text-align: center; display: none;">
+        <p id="eventHeader" style="font-size: 36px;"></p>
+        <form action=javascript:scanId(studentId.value);>
+            Student ID: <input id="studentId" type="password" name="id" type="password">
+            <input type="submit" value="Submit">
+        </form>
+        <div id="message"></div>
+        <div id="totalCount" style="padding-top: 10px;">Total Attendance: 0</div>
+        <button type="button" onclick=javascript:finish();>Finished?</button>
+    </div>
+
+    <div id="email" style="visibility: hidden; text-align: center; display: none;">
+        <span id="emailText">
+            <p>If you plan on taking more attendance for this event at a later time, you can close this page.</p>
+            <p>If you are no longer taking attendance, please select an email to which to send the attendance.</p>
+            <p>Please note, you will no longer be able to scan IDs for this event once you send the attendance list.</p>
+        </span>
+        <p id="pleaseWait" style="visibility: hidden">Please wait...</p>
+        <p id="thankYouText" style="visibility:hidden">Thank you for using the scanner! Your attendance list has been sent. Have a nice night.<br>(You may now close this page)</p>
+        <form action=javascript:emailCsv(emailNames.value); id="emailForm">
+            Email Address: <select id="emailNames" name="emailNames"></select>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+    <div style="bottom:10px;position:fixed;">
+        <p>If anything is not working as intended, please email <a href="mailto:devonwasson@gmail.com">devonwasson@gmail.com</a> for assistance.</p>
+    </div>
+
+    <p id="fileNames" style="visibility:hidden">{{fileNames}}</p>
+    <p id="authUserId" style="visibility:hidden">""</p>
+    <script src="../static/js/scanner.js" ></script>
+</body>
+</html>
+
