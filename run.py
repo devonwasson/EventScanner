@@ -308,13 +308,10 @@ def addNewAuthStudent():
         ids = f.read().splitlines()
         f.close()
         if id not in ids:
-            studentName = check21(id)
-            if '21' in studentName:
-                f = open('authorized_users.txt', 'a')
-                f.write(id + "\n")
-                f.close()
-                return " ".join(studentName.split(' ')[0:2])
-            return "Unrecognised ID"
+            f = open('authorized_users.txt', 'a')
+            f.write(id + "\n")
+            f.close()
+            return id
         return "User already has access"
     return "false"
 
