@@ -23,6 +23,12 @@ def getCsvFileNames():
                 fileNames += [fileName[:-4]]
     return fileNames
 
+def getAuthorizedUserIds():
+	f = open('authorized_users.txt', 'r')
+	users = f.read().splitlines()
+	f.close()
+	return users
+
 def get_date_21_years_ago(d):
     try:
         return d.replace(year = d.year - 21)
@@ -55,6 +61,7 @@ def testIfInt(string):
         return False
 
 # returns the dictionary of all students for testing
+# example {student_id: [dob, name]
 def makeStudentsDict(filename="AllUsers.csv"):
     d = {}
     f = open(filename)
@@ -113,7 +120,12 @@ def check21(studentId):
 def allowed_filename(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in set(['csv'])
 
-    
+def getIdFromName(name):
+	for id in studentsDict:
+		if studentsDict[id][1] == name:
+			return id
+	return ""
+
 #################
 ##             ##
 ## APP ROUTING ##
@@ -131,6 +143,7 @@ def admin():
 
 @app.route("/refresh-student-information/")
 def refreshStudentDict():
+    global studentsDict
     studentsDict = makeStudentsDict()
     return render_template('admin.html')
 
@@ -141,7 +154,7 @@ def refreshStudentDict():
 ##             ##
 #################
 
-# Takes the id to scan and returns the boolean for 
+# Takes the id to scan and returns the boolean for
 # if id is 21+ and the total number of ids scanned
 @app.route('/save-id-to-csv/', methods=['POST'])
 def saveIdToCsv():
@@ -174,11 +187,24 @@ def eventFileNamesRequest():
         return str([x.replace("'", "") for x in getCsvFileNames()])
     return "false"
 
+# Returns the list of available event names
+@app.route('/authorized-student-names-request/', methods=['POST'])
+def authorizedStudentNamesRequest():
+    authUserId = request.form["id"]
+    if testIfAuthUser(authUserId):
+        ids = getAuthorizedUserIds()
+        to_return = []
+        for id in ids:
+            if id in studentsDict:
+	            to_return.append(studentsDict[id][1])
+        return str(to_return)
+    return "false"
+
 # Opens a new output file if one does not exist
 @app.route('/make-new-outfile/', methods=['POST'])
 def makeNewOutfile():
     authUserId = request.form["id"]
-    fileName = request.form["fileName"].replace("/", "-")
+    fileName = request.form["fileName"].replace("/", "-").replace('"', "").replace("'", "")
     if testIfAuthUser(authUserId):
         outFile = "events/" + fileName + ".csv"
         if not os.path.isfile(os.getcwd() + "/" + outFile):
@@ -281,6 +307,27 @@ def addNewAuthStudent():
         return "User already has access"
     return "false"
 
+# Removes an authorized scanner user
+@app.route('/remove-authorized-student/', methods=['POST'])
+def removeAuthStudent():
+    id = request.form['id']
+    adminUserId = request.form['adminUserId']
+    to_return = "false"
+    if testIfAdmin(adminUserId):
+        f = open('authorized_users.txt', 'r')
+        ids = f.read().splitlines()
+        f.close()
+        if id not in ids:
+	    id = getIdFromName(id)
+	    if not id:
+		to_return = "Unknown user"
+	ids.remove(id)
+	f = open()'authorized_users.txt', 'w')
+	f.write("\n".join(ids))
+	f.close()
+        to_return = id
+    return to_return
+
 # Adds a new valid email address to get student lists after events
 @app.route('/add-new-authorized-emailer/', methods=['POST'])
 def addNewEmailer():
@@ -303,6 +350,7 @@ def addNewEmailer():
 # Uploads a new student CSV on the admin page
 @app.route('/upload-new-csv/', methods=['POST'])
 def uploadNewCsv():
+    global studentsDict
     adminUserId = request.form['adminUserId']
     if testIfAdmin(adminUserId):
         if 'file' not in request.files:
@@ -330,7 +378,7 @@ def uploadNewCsv():
             else:
                 print('here3')
                 return "Issue: Could not detect student IDs. Please make sure that the csv file contains each student's ID."
-            
+
             if (time.mktime(testStudentDict[id][0].timetuple())) == time.mktime(datetime.datetime.strptime("3000 12 25", "%Y %m %d").timetuple()):
                 return "Issue: Could not detect birthday format. Please ensure birthdays are formatted as either 1/1/1990 (month/day/year) or Jan-1-1990 (month(abbrv)-day-year.)"
 

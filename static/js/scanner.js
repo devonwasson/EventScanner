@@ -7,7 +7,7 @@ var outFile = "";
 function testIfAuthorized(id) {
     $.post( "/test-approved-user/", {
         id: id
-    }, 
+    },
     function(data) {
         result = __(data);
         testIfIsAuthorizedHelper(result, id);
@@ -27,6 +27,7 @@ function testIfIsAuthorizedHelper(result, id){
         document.getElementById('authUserId').innerHTML = id;
         document.getElementById('eventName').focus();
         getEventFileNames();
+	getAuthorizedStudentNames();
     }
     else {
         document.getElementById("unauthorized").style.visibility = "visible";
@@ -38,7 +39,7 @@ function testIfIsAuthorizedHelper(result, id){
 function getEventFileNames() {
     $.post( "/event-file-names-request/", {
         id: document.getElementById('authUserId').innerHTML
-    }, 
+    },
     function(data) {
         result = __(data);
         getEventFileNamesHelper(result);
@@ -65,12 +66,42 @@ function getEventFileNamesHelper(result) {
 }
 
 
+//
+function GetAuthorizedStudentNames() {
+    $.post( "/authorized-student-names-request/", {
+        id: document.getElementById('authUserId').innerHTML
+    },
+    function(data) {
+        result = __(data);
+        getAuthorizedStudentNamesHelper(result);
+    });
+    function __(data) {
+        return data;
+    }
+    return
+}
+
+function getAuthorizedNamesHelper(result) {
+    if (result == "false") {
+        return
+    }
+    console.log(result);
+    studentNames = JSON.parse(result.replace(/'/g, "\""));
+    // make new drop down options from list
+    for (var studentNum = 0; studentNum < studentNames.length; studentNum++) {
+        var studentName = studentNames[studentNum];
+        var option = document.createElement("option");
+        option.text = studentName;
+        document.getElementById("currentAuthorizedUsers").add(option);
+    }
+}
+
 // Validates the User's ID and makes a new file for the event
 function makeNewOutFile(fileName) {
     $.post( "/make-new-outfile/", {
         id: document.getElementById('authUserId').innerHTML,
         fileName: fileName
-    }, 
+    },
     function(data) {
         result = __(data);
         makeNewOutFileHelper(result, fileName);
@@ -88,7 +119,7 @@ function makeNewOutFileHelper(result, fileName){
     else if (result == 'false') {
         document.getElementById("selectEvent").style.visibility = "hidden";
         document.getElementById("unauthorized").style.visibility = "visible";
-    } else {        
+    } else {
         outFile = fileName;
         document.getElementById("eventHeader").innerHTML = "Event: " + fileName;
         document.getElementById("selectEvent").style.visibility = "hidden";
@@ -107,7 +138,7 @@ function openOldOutFile(fileName) {
     $.post( "/open-old-outfile/", {
         id: document.getElementById('authUserId').innerHTML,
         fileName: fileName
-    }, 
+    },
     function(data) {
         result = __(data);
         openOldOutFileHelper(result, fileName);
@@ -145,7 +176,7 @@ function scanId(scannedId) {
         id: document.getElementById('authUserId').innerHTML,
         scannedId: scannedId,
         fileName: outFile
-    }, 
+    },
     function(data) {
         result = __(data);
         scanIdHelper(result);
@@ -169,7 +200,7 @@ function scanIdHelper(result) {
 function getAuthorizedEmailerNames() {
     $.post( "/emailer-name-request/", {
         authUserId: document.getElementById('authUserId').innerHTML
-    }, 
+    },
     function(data) {
         result = __(data);
         getAuthorizedEmailerNamesHelper(result);
@@ -212,7 +243,7 @@ function emailCsv(to) {
         toAddr: to,
         fileName: outFile,
         eventName: document.getElementById("eventHeader").innerHTML
-    }, 
+    },
     function(data) {
         result = __(data);
         emailCsvHelper(result);
@@ -242,7 +273,7 @@ function emailCsvHelper(result) {
 function testIfAdmin(id) {
     $.post( "/test-if-admin/", {
         id: id
-    }, 
+    },
     function(data) {
         result = __(data);
         testIfAdminHelper(result, id);
@@ -272,7 +303,7 @@ function testIfAdminHelper(result, id){
 function testIfAdmin(id) {
     $.post( "/test-if-admin/", {
         id: id
-    }, 
+    },
     function(data) {
         result = __(data);
         testIfAdminHelper(result, id);
@@ -283,26 +314,11 @@ function testIfAdmin(id) {
     return
 }
 
-/*function testIfAdminHelper(result, id){
-    document.getElementById('testAdmin').style.visibility = "hidden";
-    if (result == 'true') {
-        document.getElementById('adminUserId').innerHTML = id;
-        document.getElementById('addEmailer').style.visibility = "visible";
-        document.getElementById('uploadNewCsv').style.visibility = "visible";
-        document.getElementById('addNewStudent').style.visibility = "visible";
-        document.getElementById('outMessage').style.visibility = "hidden";
-    }
-    else {
-        document.getElementById("unauthorized").style.visibility = "visible";
-    }
-    return
-}*/
-
 function enterNewAuthStudent(id) {
     $.post( "/add-new-authorized-student/", {
         id: id,
         adminUserId: document.getElementById('adminUserId').innerHTML
-    }, 
+    },
     function(data) {
         result = __(data);
         enterNewAuthStudentHelper(result);
@@ -339,7 +355,7 @@ function enterNewEmailer(email) {
     $.post( "/add-new-authorized-emailer/", {
         email: email,
         adminUserId: document.getElementById('adminUserId').innerHTML
-    }, 
+    },
     function(data) {
         result = __(data);
         enterNewEmailerHelper(result);
@@ -378,7 +394,7 @@ function removeAuthorizedUser(user) {
     },
     function(data) {
         result = __(data);
-        enterNewAuthStudentHelper(result);
+        removeAuthStudentHelper(result);
     });
     function __(data) {
         return data;
@@ -399,11 +415,7 @@ function removeAuthorizedUserHelper(result){
         console.log(result);
         document.getElementById('removeAuthorizedUsers').reset();
         document.getElementById('outMessage').style.visibility = "visible";
-        if ((result == 'Unable to find user.')) {
-            document.getElementById('outMessage').innerHTML = result;
-        } else {
-            document.getElementById('outMessage').innerHTML = result + "has been removed as an authorized scanner";
-        }
+        document.getElementById('outMessage').innerHTML = result + " has been removed as an authorized scanner";
     }
     return
 }
