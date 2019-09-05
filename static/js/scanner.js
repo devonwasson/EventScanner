@@ -65,37 +65,6 @@ function getEventFileNamesHelper(result) {
     }
 }
 
-
-//
-function GetAuthorizedStudentNames() {
-    $.post( "/authorized-student-names-request/", {
-        id: document.getElementById('authUserId').innerHTML
-    },
-    function(data) {
-        result = __(data);
-        getAuthorizedStudentNamesHelper(result);
-    });
-    function __(data) {
-        return data;
-    }
-    return
-}
-
-function getAuthorizedNamesHelper(result) {
-    if (result == "false") {
-        return
-    }
-    console.log(result);
-    studentNames = JSON.parse(result.replace(/'/g, "\""));
-    // make new drop down options from list
-    for (var studentNum = 0; studentNum < studentNames.length; studentNum++) {
-        var studentName = studentNames[studentNum];
-        var option = document.createElement("option");
-        option.text = studentName;
-        document.getElementById("currentAuthorizedUsers").add(option);
-    }
-}
-
 // Validates the User's ID and makes a new file for the event
 function makeNewOutFile(fileName) {
     $.post( "/make-new-outfile/", {
@@ -287,11 +256,15 @@ function testIfAdmin(id) {
 function testIfAdminHelper(result, id){
     document.getElementById('testAdmin').style.visibility = "hidden";
     if (result == 'true') {
-        document.getElementById('authUserId').innerHTML = id;
+        document.getElementById('adminUserId').innerHTML = id;
         document.getElementById('addEmailer').style.visibility = "visible";
         document.getElementById('uploadNewCsv').style.visibility = "visible";
         document.getElementById('addNewStudent').style.visibility = "visible";
+        document.getElementById('addNewAdmin').style.visibility = "visible";
         document.getElementById('removeAuthorizedUsers').style.visibility = "visible";
+        document.getElementById('removeAuthorizedEmails').style.visibility = "visible";
+        getAuthorizedStudentNames();
+        getAuthorizedEmailNames();
     }
     else {
         document.getElementById("unauthorized").style.visibility = "visible";
@@ -299,17 +272,100 @@ function testIfAdminHelper(result, id){
     return
 }
 
-
-function testIfAdmin(id) {
-    $.post( "/test-if-admin/", {
-        id: id
+// Populates the list of authorized users
+function getAuthorizedStudentNames() {
+    $.post( "/authorized-student-names-request/", {
+        id: document.getElementById('adminUserId').innerHTML
     },
     function(data) {
         result = __(data);
-        testIfAdminHelper(result, id);
+        getAuthorizedStudentNamesHelper(result);
     });
     function __(data) {
         return data;
+    }
+    return
+}
+
+function getAuthorizedStudentNamesHelper(result) {
+    console.log(result)
+    if (result == "false") {
+        return
+    }
+    studentNames = JSON.parse(result.replace(/'/g, "\""));
+    // make new drop down options from list
+    for (var studentNum = 0; studentNum < studentNames.length; studentNum++) {
+        var studentName = studentNames[studentNum];
+        var option = document.createElement("option");
+        option.text = studentName;
+        document.getElementById("currentAuthorizedUsers").add(option);
+    }
+}
+
+// Populates the list of approved emailers
+function getAuthorizedEmailNames() {
+    $.post( "/authorized-email-names-request/", {
+        id: document.getElementById('adminUserId').innerHTML
+    },
+    function(data) {
+        result = __(data);
+        getAuthorizedEmailNamesHelper(result);
+    });
+    function __(data) {
+        return data;
+    }
+    return
+}
+
+function getAuthorizedEmailNamesHelper(result) {
+    console.log(result)
+    if (result == "false") {
+        return
+    }
+    emailNames = JSON.parse(result.replace(/'/g, "\""));
+    // make new drop down options from list
+    for (var emailNum = 0; emailNum < emailNames.length; emailNum++) {
+        var emailName = emailNames[emailNum];
+        var option = document.createElement("option");
+        option.text = emailName;
+        document.getElementById("currentAuthorizedEmails").add(option);
+    }
+}
+
+function enterNewAdmin(id) {
+    $.post( "/add-new-admin/", {
+        id: id,
+        adminUserId: document.getElementById('adminUserId').innerHTML
+    },
+    function(data) {
+        result = __(data);
+        enterNewAdminHelper(result);
+    });
+    function __(data) {
+        return data;
+    }
+    return
+}
+
+function enterNewAdminHelper(result){
+    if (result == 'false') {
+        document.getElementById('addEmailer').style.visibility = "hidden";
+        document.getElementById('uploadNewCsv').style.visibility = "hidden";
+        document.getElementById('addNewStudent').style.visibility = "hidden";
+        document.getElementById('addNewAdmin').style.visibility = "hidden";
+        document.getElementById('outMessage').style.visibility = "hidden";
+        document.getElementById('removeAuthorizedUsers').style.visibility = "hidden";
+        document.getElementById('removeAuthorizedEmails').style.visibility = "hidden";
+        document.getElementById("unauthorized").style.visibility = "visible";
+    }
+    else {
+        document.getElementById('adminIdForm').reset();
+        document.getElementById('outMessage').style.visibility = "visible";
+        if (result == 'User already has access') {
+            document.getElementById('outMessage').innerHTML = result;
+        } else {
+            document.getElementById('outMessage').innerHTML = result + " has been added as an authorized administrator.";
+        }
     }
     return
 }
@@ -334,8 +390,10 @@ function enterNewAuthStudentHelper(result){
         document.getElementById('addEmailer').style.visibility = "hidden";
         document.getElementById('uploadNewCsv').style.visibility = "hidden";
         document.getElementById('addNewStudent').style.visibility = "hidden";
+        document.getElementById('addNewAdmin').style.visibility = "hidden";
         document.getElementById('outMessage').style.visibility = "hidden";
-	document.getElementById('removeAuthorizedUsers').style.visibility = "hidden";
+        document.getElementById('removeAuthorizedUsers').style.visibility = "hidden";
+        document.getElementById('removeAuthorizedEmails').style.visibility = "hidden";
         document.getElementById("unauthorized").style.visibility = "visible";
     }
     else {
@@ -371,8 +429,10 @@ function enterNewEmailerHelper(result){
         document.getElementById('addEmailer').style.visibility = "hidden";
         document.getElementById('uploadNewCsv').style.visibility = "hidden";
         document.getElementById('addNewStudent').style.visibility = "hidden";
+        document.getElementById('addNewAdmin').style.visibility = "hidden";
         document.getElementById('outMessage').style.visibility = "hidden";
         document.getElementById('removeAuthorizedUsers').style.visibility = "hidden";
+        document.getElementById('removeAuthorizedEmails').style.visibility = "hidden";
         document.getElementById("unauthorized").style.visibility = "visible";
     } else {
         console.log(result);
@@ -389,12 +449,12 @@ function enterNewEmailerHelper(result){
 
 function removeAuthorizedUser(user) {
     $.post( "/remove-authorized-student/", {
-        id: id,
+        id: user,
         adminUserId: document.getElementById('adminUserId').innerHTML
     },
     function(data) {
         result = __(data);
-        removeAuthStudentHelper(result);
+        removeAuthorizedUserHelper(result);
     });
     function __(data) {
         return data;
@@ -407,15 +467,62 @@ function removeAuthorizedUserHelper(result){
         document.getElementById('addEmailer').style.visibility = "hidden";
         document.getElementById('uploadNewCsv').style.visibility = "hidden";
         document.getElementById('addNewStudent').style.visibility = "hidden";
+        document.getElementById('addNewAdmin').style.visibility = "hidden";
         document.getElementById('outMessage').style.visibility = "hidden";
         document.getElementById('removeAuthorizedUsers').style.visibility = "hidden";
+        document.getElementById('removeAuthorizedEmails').style.visibility = "hidden";
         document.getElementById("unauthorized").style.visibility = "visible";
     }
     else {
         console.log(result);
-        document.getElementById('removeAuthorizedUsers').reset();
+        document.getElementById('currentAuthorizedUsers').selectedIndex = 0;
         document.getElementById('outMessage').style.visibility = "visible";
+        var selectobject = document.getElementById("currentAuthorizedUsers");
+        for (var i=0; i<selectobject.length; i++) {
+            if (selectobject.options[i].value == result)
+                selectobject.remove(i);
+        }
         document.getElementById('outMessage').innerHTML = result + " has been removed as an authorized scanner";
+    }
+    return
+}
+
+function removeAuthorizedEmail(email) {
+    $.post( "/remove-authorized-email/", {
+        email: email,
+        adminUserId: document.getElementById('adminUserId').innerHTML
+    },
+    function(data) {
+        result = __(data);
+        removeAuthorizedEmailHelper(result);
+    });
+    function __(data) {
+        return data;
+    }
+    return
+}
+
+function removeAuthorizedEmailHelper(result){
+    if (result == 'false') {
+        document.getElementById('addEmailer').style.visibility = "hidden";
+        document.getElementById('uploadNewCsv').style.visibility = "hidden";
+        document.getElementById('addNewStudent').style.visibility = "hidden";
+        document.getElementById('addNewAdmin').style.visibility = "hidden";
+        document.getElementById('outMessage').style.visibility = "hidden";
+        document.getElementById('removeAuthorizedUsers').style.visibility = "hidden";
+        document.getElementById('removeAuthorizedEmails').style.visibility = "hidden";
+        document.getElementById("unauthorized").style.visibility = "visible";
+    }
+    else {
+        console.log(result);
+        document.getElementById('currentAuthorizedEmails').selectedIndex = 0;
+        document.getElementById('outMessage').style.visibility = "visible";
+        var selectobject = document.getElementById("currentAuthorizedEmails");
+        for (var i=0; i<selectobject.length; i++) {
+            if (selectobject.options[i].value == result)
+                selectobject.remove(i);
+        }
+        document.getElementById('outMessage').innerHTML = result + " has been removed as an authorized email address";
     }
     return
 }
@@ -442,8 +549,10 @@ $(function() {
                     document.getElementById('addEmailer').style.visibility = "hidden";
                     document.getElementById('uploadNewCsv').style.visibility = "hidden";
                     document.getElementById('addNewStudent').style.visibility = "hidden";
+                    document.getElementById('addNewAdmin').style.visibility = "hidden";
                     document.getElementById('outMessage').style.visibility = "hidden";
-	            document.getElementById('removeAuthorizedUsers').style.visibility = "hidden";
+	                document.getElementById('removeAuthorizedUsers').style.visibility = "hidden";
+                    document.getElementById('removeAuthorizedEmails').style.visibility = "hidden";
                     document.getElementById("unauthorized").style.visibility = "visible";
                 } else {
                     document.getElementById('outMessage').innerHTML = result;

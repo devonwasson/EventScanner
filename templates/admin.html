@@ -18,9 +18,17 @@
         </form>
     </div>
 
+    <div id="addNewAdmin" style="text-align: center; visibility: hidden; padding-bottom: 30px;">
+        <form id="adminIdForm" action=javascript:enterNewAdmin(adminId.value);>
+            Add a new Administrator (This gives access to THIS page ONLY): 
+            <input id="adminId" type="password" name="adminId" type="password" placeholder="12345678">
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+
     <div id="addNewStudent" style="text-align: center; visibility: hidden; padding-bottom: 30px;">
         <form id="studentIdForm" action=javascript:enterNewAuthStudent(studentId.value);>
-            Add a new Authorized User: 
+            Add a new Authorized Scanner: 
             <input id="studentId" type="password" name="studentId" type="password" placeholder="12345678">
             <input type="submit" value="Submit">
         </form>
@@ -42,14 +50,23 @@
 
     <div id="removeAuthorizedUsers" style="text-align: center; visibility: hidden; padding-bottom: 30px;">
         <form id="removeAuthorizedUserForm" action=javascript:removeAuthorizedUser(currentAuthorizedUsers.value);>
-            Remove an Authorized User <select id="currentAuthorizedUsers" name="currentAuthorizedUsers"></select>
+            Remove an Authorized Scanner <select id="currentAuthorizedUsers" name="currentAuthorizedUsers"></select>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+
+    <div id="removeAuthorizedEmails" style="text-align: center; visibility: hidden; padding-bottom: 30px;">
+        <form id="removeAuthorizedEmailForm" action=javascript:removeAuthorizedEmail(currentAuthorizedEmails.value);>
+            Remove an Authorized Email Address <select id="currentAuthorizedEmails" name="currentAuthorizedEmails"></select>
             <input type="submit" value="Submit">
         </form>
     </div>
 
     <p id="outMessage" style="text-align: center; visibility: hidden;">
     </p>
-
+    <div style="bottom:10px;position:fixed;">
+        <p>If anything is not working as intended, please email <a href="mailto:devonwasson@gmail.com">devonwasson@gmail.com</a> for assistance.</p>
+    </div>
 
     <p id="adminUserId" style="visibility:hidden">""</p>
     <script src="../static/js/scanner.js" ></script>

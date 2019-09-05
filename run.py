@@ -24,10 +24,16 @@ def getCsvFileNames():
     return fileNames
 
 def getAuthorizedUserIds():
-	f = open('authorized_users.txt', 'r')
-	users = f.read().splitlines()
-	f.close()
-	return users
+    f = open('authorized_users.txt', 'r')
+    users = f.read().splitlines()
+    f.close()
+    return users
+
+def getAuthorizedEmailers():
+    f = open('approved_emailers.txt', 'r')
+    emailers = f.read().splitlines()
+    f.close()
+    return emailers
 
 def get_date_21_years_ago(d):
     try:
@@ -39,6 +45,7 @@ def testIfAuthUser(user):
     f = open(os.getcwd() + "/authorized_users.txt")
     users = f.read().splitlines()
     f.close()
+    print(user, str(users))
     return user in users
 
 def testIfAdmin(user):
@@ -121,10 +128,10 @@ def allowed_filename(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in set(['csv'])
 
 def getIdFromName(name):
-	for id in studentsDict:
-		if studentsDict[id][1] == name:
-			return id
-	return ""
+    for student_id in studentsDict:
+        if name in studentsDict[student_id][1]:
+            return student_id
+    return ""
 
 #################
 ##             ##
@@ -185,19 +192,6 @@ def eventFileNamesRequest():
     authUserId = request.form["id"]
     if testIfAuthUser(authUserId):
         return str([x.replace("'", "") for x in getCsvFileNames()])
-    return "false"
-
-# Returns the list of available event names
-@app.route('/authorized-student-names-request/', methods=['POST'])
-def authorizedStudentNamesRequest():
-    authUserId = request.form["id"]
-    if testIfAuthUser(authUserId):
-        ids = getAuthorizedUserIds()
-        to_return = []
-        for id in ids:
-            if id in studentsDict:
-	            to_return.append(studentsDict[id][1])
-        return str(to_return)
     return "false"
 
 # Opens a new output file if one does not exist
@@ -288,6 +282,23 @@ def testIfAdminServerFnct():
         return 'false'
 
 # Adds a new authorized scanner user
+@app.route('/add-new-admin/', methods=['POST'])
+def addNewAdmin():
+    id = request.form['id']
+    adminUserId = request.form['adminUserId']
+    if testIfAdmin(adminUserId):
+        f = open('admins.txt', 'r')
+        ids = f.read().splitlines()
+        f.close()
+        if id not in ids:
+            f = open('admins.txt', 'a')
+            f.write(id + "\n")
+            f.close()
+            return id
+        return "User already has access"
+    return "false"
+
+# Adds a new authorized scanner user
 @app.route('/add-new-authorized-student/', methods=['POST'])
 def addNewAuthStudent():
     id = request.form['id']
@@ -307,34 +318,12 @@ def addNewAuthStudent():
         return "User already has access"
     return "false"
 
-# Removes an authorized scanner user
-@app.route('/remove-authorized-student/', methods=['POST'])
-def removeAuthStudent():
-    id = request.form['id']
-    adminUserId = request.form['adminUserId']
-    to_return = "false"
-    if testIfAdmin(adminUserId):
-        f = open('authorized_users.txt', 'r')
-        ids = f.read().splitlines()
-        f.close()
-        if id not in ids:
-	    id = getIdFromName(id)
-	    if not id:
-		to_return = "Unknown user"
-	ids.remove(id)
-	f = open()'authorized_users.txt', 'w')
-	f.write("\n".join(ids))
-	f.close()
-        to_return = id
-    return to_return
-
 # Adds a new valid email address to get student lists after events
 @app.route('/add-new-authorized-emailer/', methods=['POST'])
 def addNewEmailer():
     email = request.form['email']
     adminUserId = request.form['adminUserId']
     if testIfAdmin(adminUserId):
-        # if testValidEmail(email+"@bucknell.edu", 'bucknellscanner', 'Uptown11'):
         f = open('approved_emailers.txt', 'r')
         emailAddresses = f.read().splitlines()
         f.close()
@@ -344,7 +333,6 @@ def addNewEmailer():
             f.close()
             return email
         return "User already has access"
-        # return "Invalid email address"
     return "false"
 
 # Uploads a new student CSV on the admin page
@@ -388,6 +376,67 @@ def uploadNewCsv():
             return 'true'
         return 'File must be a .csv file.'
     return 'false'
+
+# Removes an authorized scanner user
+@app.route('/remove-authorized-student/', methods=['POST'])
+def removeAuthStudent():
+    name_and_id = str(request.form['id'])
+    if "(" in name_and_id:
+        student_id = name_and_id.split("(")[1].split(")")[0]
+    else:
+        student_id = name_and_id
+    adminUserId = request.form['adminUserId']
+    if testIfAdmin(adminUserId):
+        f = open('authorized_users.txt', 'r')
+        ids = f.read().splitlines()
+        f.close()
+        if student_id in ids:
+            ids.remove(student_id)
+        f = open('authorized_users.txt', 'w')
+        f.write("\n".join(ids))
+        f.close()
+        return name_and_id
+    return "false"
+
+# Removes an authorized scanner user
+@app.route('/remove-authorized-email/', methods=['POST'])
+def removeAuthEmail():
+    email = str(request.form['email'])
+    adminUserId = request.form['adminUserId']
+    if testIfAdmin(adminUserId):
+        f = open('approved_emailers.txt', 'r')
+        emails = f.read().splitlines()
+        f.close()
+        if email in emails:
+            emails.remove(email)
+        f = open('approved_emailers.txt', 'w')
+        f.write("\n".join(emails))
+        f.close()
+        return email
+    return "false"
+
+# Returns the list of current authorized scanners
+@app.route('/authorized-student-names-request/', methods=['POST'])
+def authorizedStudentNamesRequest():
+    authUserId = request.form["id"]
+    if testIfAdmin(authUserId):
+        ids = getAuthorizedUserIds()
+        to_return = []
+        for id in ids:
+            if id in studentsDict:
+                to_return.append(studentsDict[id][1] + "(" + id + ")")
+            else:
+                to_return.append(id)
+        return str(to_return)
+    return "false"
+
+# Returns the list of current authorized emailers
+@app.route('/authorized-email-names-request/', methods=['POST'])
+def authorizedEmailNamesRequest():
+    authUserId = request.form["id"]
+    if testIfAdmin(authUserId):
+        return str(getAuthorizedEmailers())
+    return "false"
 
 
 studentsDict = makeStudentsDict()
