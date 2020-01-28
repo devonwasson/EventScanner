@@ -355,19 +355,15 @@ def uploadNewCsv():
                     try:
                         id = str(int(id))
                         if not len(id) == 8:
-                            print('here1')
                             return "Issue: Could not detect student IDs. Please make sure that the csv file contains each student's ID." 
                     except:
-                        print('here2')
                         return "Issue: Could not detect student IDs. Please make sure that the csv file contains each student's ID."
             else:
-                print('here3')
                 return "Issue: Could not detect student IDs. Please make sure that the csv file contains each student's ID."
 
             if (time.mktime(testStudentDict[id][0].timetuple())) == time.mktime(datetime.datetime.strptime("3000 12 25", "%Y %m %d").timetuple()):
                 return "Issue: Could not detect birthday format. Please ensure birthdays are formatted as either 1/1/1990 (month/day/year) or Jan-1-1990 (month(abbrv)-day-year.)"
 
-            global studentsDict
             studentsDict = testStudentDict
             os.rename(filename, 'AllUsers.csv')
             return 'true'
@@ -440,4 +436,4 @@ studentsDict = makeStudentsDict()
 
 
 if __name__ == "__main__":
-    app.run(debug = True, port=5050)
+        app.run(debug = True, port=5050)
