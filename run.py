@@ -7,6 +7,18 @@ import time
 from emailHelper import sendEmail, testValidEmail
 from werkzeug.utils import secure_filename
 
+f = open("config.txt", "r")
+info = f.read().splitlines()
+f.close()
+
+config = {}
+for item in info:
+        pair = item.split(":")
+        config[pair[0]] = pair[1]
+
+email_address = config['email']
+email_password = config['password']
+
 app = Flask(__name__)
 
 ##################
@@ -242,7 +254,7 @@ def sendAttendence():
     eventName = request.form['eventName']
     if testIfAuthUser(authUserId):
         if testIfAuthEmail(to):
-            sendEmail("bucknelleventscanner@gmail.com", to+"@bucknell.edu", fileName, eventName, 'bucknellscanner', 'Uptown2017')
+            sendEmail("bucknelleventscanner@gmail.com", to+"@bucknell.edu", fileName, eventName, email_address, email_password)
             os.remove(fileName)  # still debating this line here...
             print(authUserId + " sent an email to " + to + " for " + eventName + " with file " + fileName)
             return "true"
