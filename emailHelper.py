@@ -42,7 +42,9 @@ def sendEmail(emailfrom, emailto, fileToSend, eventName, username, password):
         attachment.set_payload(fp.read())
         fp.close()
         encoders.encode_base64(attachment)
-    attachment.add_header("Content-Disposition", "attachment", filename=fileToSend[7:])
+    if "/" in fileToSend:
+        fileToSend = fileToSend.split("/")[-1]
+    attachment.add_header("Content-Disposition", "attachment", filename=fileToSend)
     msg.attach(attachment)
 
     s = smtplib.SMTP('smtp.gmail.com:587')
