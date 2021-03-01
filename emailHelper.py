@@ -9,14 +9,7 @@ from email.mime.image import MIMEImage
 from email.mime.text import MIMEText
 
 
-def sendEmail(emailfrom, emailto, fileToSend, eventName, username, password):
-
-    msg = MIMEMultipart()
-    msg["From"] = emailfrom
-    msg["To"] = emailto
-    msg["Subject"] = "Attendence For " + eventName
-    msg.preamble = "Attendence For " + eventName
-
+def attachFile(msg, fileToSend):
     ctype, encoding = mimetypes.guess_type(fileToSend)
     if ctype is None or encoding is not None:
         ctype = "application/octet-stream"
@@ -46,6 +39,18 @@ def sendEmail(emailfrom, emailto, fileToSend, eventName, username, password):
         fileToSend = fileToSend.split("/")[-1]
     attachment.add_header("Content-Disposition", "attachment", filename=fileToSend)
     msg.attach(attachment)
+
+
+def sendEmail(emailfrom, emailto, fileToSend, eventName, username, password):
+
+    msg = MIMEMultipart()
+    msg["From"] = emailfrom
+    msg["To"] = emailto
+    msg["Subject"] = "Attendence For " + eventName
+    msg.preamble = "Attendence For " + eventName
+
+    if fileToSend:
+        attach_file(msg, fileToSend)
 
     s = smtplib.SMTP('smtp.gmail.com:587')
     s.starttls()
